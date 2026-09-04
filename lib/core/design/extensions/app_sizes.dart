@@ -34,6 +34,9 @@ class AppSizes extends ThemeExtension<AppSizes> {
     required this.ringStroke,
     required this.accentEdge,
     required this.chartPlotHeight,
+    required this.summaryStripExpandedHeight,
+    required this.summaryStripCollapsedHeight,
+    required this.scanProgressStripExpandedHeight,
   });
 
   final double tapTargetMin;
@@ -83,6 +86,26 @@ class AppSizes extends ThemeExtension<AppSizes> {
   /// labels. Tall enough that a quiet day still reads as a bar.
   final double chartPlotHeight;
 
+  /// Height of a pinned summary strip's sliver header at full size — the
+  /// three stat tiles, before it has scrolled under anything. Matches the
+  /// strip's actual, unstretched content height at text scale 1.0 exactly —
+  /// `AppPinnedSummary` scales this by the live text scale itself, so the
+  /// token stays the true baseline rather than a padded guess.
+  ///
+  /// A `SliverPersistentHeader` needs a concrete pixel extent, which is
+  /// normally exactly what rule 1c forbids for a box holding text; scaling it
+  /// live rather than padding it flat is what keeps that promise here too.
+  final double summaryStripExpandedHeight;
+
+  /// Height once the strip is pinned at the top and has shrunk to its
+  /// one-line form. Same baseline rationale as [summaryStripExpandedHeight].
+  final double summaryStripCollapsedHeight;
+
+  /// [summaryStripExpandedHeight]'s counterpart for the Scan screen, whose
+  /// full form carries a progress ring instead of a plain stat tile and so
+  /// needs more room.
+  final double scanProgressStripExpandedHeight;
+
   static const AppSizes standard = AppSizes(
     tapTargetMin: PrimitiveSizes.tapTargetMin,
     tapTargetComfortable: PrimitiveSizes.tapTargetGloved,
@@ -105,6 +128,9 @@ class AppSizes extends ThemeExtension<AppSizes> {
     ringStroke: 4,
     accentEdge: 4,
     chartPlotHeight: 72,
+    summaryStripExpandedHeight: 78,
+    summaryStripCollapsedHeight: 46,
+    scanProgressStripExpandedHeight: 114,
   );
 
   @override
@@ -130,6 +156,9 @@ class AppSizes extends ThemeExtension<AppSizes> {
     double? ringStroke,
     double? accentEdge,
     double? chartPlotHeight,
+    double? summaryStripExpandedHeight,
+    double? summaryStripCollapsedHeight,
+    double? scanProgressStripExpandedHeight,
   }) {
     return AppSizes(
       tapTargetMin: tapTargetMin ?? this.tapTargetMin,
@@ -153,6 +182,13 @@ class AppSizes extends ThemeExtension<AppSizes> {
       ringStroke: ringStroke ?? this.ringStroke,
       accentEdge: accentEdge ?? this.accentEdge,
       chartPlotHeight: chartPlotHeight ?? this.chartPlotHeight,
+      summaryStripExpandedHeight:
+          summaryStripExpandedHeight ?? this.summaryStripExpandedHeight,
+      summaryStripCollapsedHeight:
+          summaryStripCollapsedHeight ?? this.summaryStripCollapsedHeight,
+      scanProgressStripExpandedHeight:
+          scanProgressStripExpandedHeight ??
+          this.scanProgressStripExpandedHeight,
     );
   }
 
@@ -189,6 +225,21 @@ class AppSizes extends ThemeExtension<AppSizes> {
       ringStroke: lerpToken(ringStroke, other.ringStroke, t),
       accentEdge: lerpToken(accentEdge, other.accentEdge, t),
       chartPlotHeight: lerpToken(chartPlotHeight, other.chartPlotHeight, t),
+      summaryStripExpandedHeight: lerpToken(
+        summaryStripExpandedHeight,
+        other.summaryStripExpandedHeight,
+        t,
+      ),
+      summaryStripCollapsedHeight: lerpToken(
+        summaryStripCollapsedHeight,
+        other.summaryStripCollapsedHeight,
+        t,
+      ),
+      scanProgressStripExpandedHeight: lerpToken(
+        scanProgressStripExpandedHeight,
+        other.scanProgressStripExpandedHeight,
+        t,
+      ),
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
-import '../../domain/daily_scan_count.dart';
+import '../../../../domain/models/shift_stats.dart';
 
 /// Units scanned per day over the last seven days.
 ///

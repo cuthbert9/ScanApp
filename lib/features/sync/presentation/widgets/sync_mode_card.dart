@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
-import '../../../../core/sync/domain/sync_mode.dart';
+import '../../../../domain/models/sync_mode.dart';
 
 /// One selectable sync mode: number, title, and what choosing it means.
 ///

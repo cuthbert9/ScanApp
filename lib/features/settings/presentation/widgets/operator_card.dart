@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
-import '../../domain/operator_profile.dart';
+import '../../../../domain/models/officer.dart';
 
 /// Who is signed in: initials, name, staff number and role.
 class OperatorCard extends StatelessWidget {
   const OperatorCard({super.key, required this.profile});
 
-  final OperatorProfile profile;
+  final Officer profile;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class OperatorCard extends StatelessWidget {
                   ),
                   SizedBox(height: spacing.xxs),
                   Text(
-                    '${profile.staffId}  ·  ${profile.role}',
+                    '${profile.staffNo}  ·  ${profile.grade}',
                     style: context.type.dataSm.copyWith(
                       color: colors.dataMuted,
                     ),
@@ -50,9 +50,9 @@ class OperatorCard extends StatelessWidget {
             ),
             SizedBox(width: spacing.sm),
             Text(
-              profile.isOnShift ? 'ON SHIFT' : 'OFF SHIFT',
+              profile.onShift ? 'ON SHIFT' : 'OFF SHIFT',
               style: context.type.overline.copyWith(
-                color: profile.isOnShift
+                color: profile.onShift
                     ? colors.textSecondary
                     : colors.textTertiary,
               ),

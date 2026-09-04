@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
 import '../../../../shared/widgets/widgets.dart';
-import '../../domain/station.dart';
+import '../../../../domain/models/station.dart';
 
 /// The warehouse base this handheld is working from.
 ///
@@ -61,7 +61,7 @@ class StationCard extends StatelessWidget {
               value: station.geofenceLabel,
               // Inside the fence is the normal, safe state; outside means the
               // operator has walked away from the bay they are loading.
-              accent: station.isInsideGeofence
+              accent: station.insideGeofence
                   ? StatAccent.success
                   : StatAccent.warning,
             ),

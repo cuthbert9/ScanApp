@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
-import '../../domain/gs1_barcode.dart';
+import '../../../../domain/models/gs1_barcode.dart';
 
 /// The monospaced detail line under a scan, with GS1 Application Identifiers
 /// emphasised:

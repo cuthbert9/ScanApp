@@ -48,23 +48,43 @@ lib/
     sync/                       The device's outbox. Infrastructure, not a
                                 feature — see "The outbox" below.
 
+  domain/                       NEW — the shared aggregate and the contracts.
+    models/                     Order (+ lines), Officer, Station, Vehicle,
+                                ScanEvent, LoadSeal, SyncRecord/Status,
+                                ColdChainLog, ShiftStats. Pure Dart.
+    repositories/               The seven interfaces. See README swap points.
+
+  data/                         NEW — one in-memory store behind all seven.
+    mock_seed.dart              EVERY seed value. Edit this to change scenarios.
+    mock_backend.dart           The single source of truth + all the rules.
+    mock_*_repository.dart      Thin adapters: latency in, Result out.
+
   shared/widgets/               Reusable, feature-agnostic widgets.
     display/                    AppBadge, AppCountBadge, AppDetailRow,
                                 AppMetaRow, AppSectionHeading, AppStatRing,
-                                AppStatTile
+                                AppStatTile, AppSummaryCompactLine
     feedback/                   AppInfoPanel, PlaceholderScreen
     layout/                     AppScreenHeader, AppSummaryStrip,
-                                AppBottomActionBar
+                                AppBottomActionBar, AppPinnedSummary
     widgets.dart                Barrel — import this, not individual files.
 
-  features/
+  app/state/                    App-level stores every screen watches.
+    dock_controller.dart        Staged orders, the open order, hasViewedLoad.
+    sync_controller.dart        The outbox + pendingSyncCount.
+    preferences_controller.dart Theme and text size.
+
+  features/                     **Presentation and per-screen controllers only.**
     auth/                       Sign-in. Stubbed.
     orders/                     The loading queue (home tab).
-    loading/                    The load session: scan, verify, reconcile.
-    sync/                       Presentation for the outbox in core/sync/.
+    loading/                    Scan & Verify and Load Reconciliation.
+    sync/                       Offline Sync.
     settings/                   Operator, shift figures, station, preferences.
     shell/                      Bottom-tab chrome around the branches.
 ```
+
+Features no longer carry `domain/` or `data/` folders. The aggregate is shared,
+so it lives below them — which is what rule 3 said should happen the moment two
+features needed the same thing.
 
 Five widgets moved into `shared/` as second and third consumers appeared —
 `AppScreenHeader` and `AppSectionHeading` from `orders`, `AppBottomActionBar`
@@ -74,23 +94,35 @@ screen's local-queue card needed the reconciliation card's label/value line.
 That is rule 2's "used by two or more features" bar being applied rather than
 near-duplicates accumulating.
 
+## One aggregate, one store
+
+`lib/domain/` holds the models and the seven repository interfaces.
+`lib/data/` holds `MockBackend` — the single in-memory store — and one `Mock*`
+adapter per interface. Screens talk to interfaces, never to a concrete class.
+
+**`Order` carries `lines[]`, and every figure is derived from them.** Units,
+verified, held, short, first-pass yield, weight and volume are all getters on
+the aggregate, so changing one line's `state` moves every number on every
+screen at once. Nothing downstream recomputes or caches them.
+
+`DockController` in `app/state/` is the app-level store: it holds the staged
+orders, the open order and the `hasViewedLoad` flag. Every mutation goes
+through a repository and then `refresh()`, which is why the queue card behind
+the Scan screen is already correct when you go back to it.
+
+This replaced four parallel models of the same order — `LoadingOrder` with a
+scalar `units`, plus `ScanSession`, `LoadReconciliation` and `SyncQueue` — which
+could not agree with each other by construction.
+
 ## The outbox
 
-`lib/core/sync/` holds the device's outbox — mode, queued records, flush — with
-its own domain, data and application layers. It is the only part of `core/` that
-carries app domain rather than pure infrastructure, and that is deliberate.
+The outbox lives behind `SyncRepository` and is held by `SyncController` in
+`app/state/`. Three unrelated places read it: the shell's tab badge, the amber
+dot on every screen header, and the Sync screen.
 
-Three unrelated places read it: the shell's tab badge, the scan header's
-indicator, and the sync screen. If a feature owned it, the shell would have to
-import that feature, which rule 3 forbids. Giving each consumer its own copy was
-the alternative and was rejected for the same reason it was on the Load tab: a
-flush would empty one and leave the others stale.
-
-So the queue is infrastructure — every feature's writes eventually land in it,
-and it depends on nothing above it — and `features/sync/` is presentation only.
-
-`pendingSyncCountProvider` is derived from the queue, so flushing empties the
-badge without anything having to remember to update it.
+`pendingSyncCountProvider` is derived from the queue, so a flush empties all
+three at once and none can go stale. Every scan and every seal enqueues a
+record, which is why the badge moves when you scan.
 
 ## The dependency rule
 
@@ -164,10 +196,10 @@ the next unbuilt one, but nothing routes to it.
 
 | Feature | Owns | Entry | State |
 |---|---|---|---|
-| `orders` | The dock's loading queue: staged orders, counts, selection | `LoadingQueueScreen` | Complete UI, fake data |
-| `loading` | The load session — scanning units onto a truck, judging them against the manifest, and reconciling before seal | `ScanScreen`, `LoadReconciliationScreen` | Complete UI, fake data |
-| `sync` | Presentation for the outbox — mode selection and flushing. The queue itself lives in `core/sync/` | `SyncScreen` | Complete UI, fake store |
-| `settings` | The operator, shift figures, the station, and the three preferences that apply | `SettingsScreen` | Complete UI, fake data |
+| `orders` | The dock's loading queue: staged orders, counts, selection | `LoadingQueueScreen` | Wired to the mock backend |
+| `loading` | Scanning units onto a truck, judging them against the manifest, and reconciling before seal | `ScanScreen`, `LoadReconciliationScreen` | Wired, incl. sealing |
+| `sync` | Presentation for the outbox — mode selection and flushing | `SyncScreen` | Wired, incl. flush |
+| `settings` | The operator, shift figures, the station, and the preferences that apply | `SettingsScreen` | Wired, incl. station picker |
 | `auth` | Sign-in and the session flag | `LoginScreen` | Stub — accepts anything |
 | `shell` | Bottom-tab chrome | `AppShell` | Complete |
 
@@ -249,31 +281,27 @@ the same provider.
 
 ## Testing
 
-Six test files, 70 tests:
+43 tests, four files:
 
 | File | Covers |
 |---|---|
-| `gs1_barcode_test.dart` | The parser, directly — bracketed, concatenated, FNC1, bare EANs, expiry edge cases, malformed input, identity. Pure Dart, no widget binding. |
-| `loading_queue_responsive_test.dart` | The home screen: derived counts, the no-tap CTA, and overflow at four canvases. |
-| `scan_screen_test.dart` | The manifest rules end to end (accept, duplicate, over-count, unknown, empty) plus overflow at six canvases. |
-| `load_reconciliation_test.dart` | Every derived figure, the amended-manifest notice, overflow at four canvases, and that a scan on the session moves the load figures — the test that justifies scan and load being one feature. |
-| `sync_screen_test.dart` | Derived queue figures, mode selection changing the state word, and that flushing empties both the queue and `pendingSyncCountProvider` — the badge the shell renders. |
-| `settings_screen_test.dart` | Derived shift figures and initials, the station card, chart tap-to-inspect, that theme and text-size preferences actually apply, and that signing out with a non-empty outbox warns first. |
+| `mock_backend_test.dart` | The rules, directly — the scan ladder in order, FEFO, sealing amended, a sealed order refusing scans, flushing, air-gapped refusal, simulated offline, station re-sync. No widgets. |
+| `gs1_barcode_test.dart` | The GS1 parser — bracketed, concatenated, FNC1, bare EANs, expiry edge cases, malformed input. |
+| `demo_path_test.dart` | The whole flow through the real router and shell: open an order, debug-scan, reconcile, seal, watch it leave the queue, flush the badge, switch theme. |
+| `screens_responsive_test.dart` | All five tabs at portrait, landscape, and both at font scale 1.3, asserting no `RenderFlex overflowed`. |
 
-Screens are rendered at every canvas the device can present — portrait 320×533,
-landscape 533×320, keyboard up, font scale 1.3, and the combinations — asserting
-`tester.takeException()` is null. Flutter reports a `RenderFlex overflowed` as a
-thrown error, so layout regressions fail the build instead of shipping.
+Rules are tested at the backend rather than through widgets, which is the whole
+point of keeping them there. The demo path is the integration test; the
+responsive sweep is the layout safety net.
 
-This caught two real bugs during the scan build: the cold-chain readings
-overflowed at font scale 1.3, and landscape-with-keyboard leaves about 140 dp,
-less than the pinned chrome needed.
-
-Two test-authoring traps worth remembering. Inside `testWidgets` the clock is
-faked, so awaiting a repository future *before* any `pump()` never completes —
-pump first, then drive the notifier. And a lazy `ListView` has not built what is
-below the fold, so asserting a notice is absent proves nothing until you have
-scrolled to where it would be.
+Three test-authoring traps worth remembering. Inside `testWidgets` the clock is
+faked, so awaiting a repository future before any `pump()` never completes.
+The shell's `IndexedStack` keeps every screen mounted, so a bare
+`find.byType(CustomScrollView)` (or `ListView`) matches several — scope
+finders to the screen you mean. And since every screen is now one scrolling
+sliver list, a widget placed near the bottom — the bottom action bar most of
+all — is not built until scrolled near the viewport; `find` on it returns
+nothing until then, not a "not visible yet" hint.
 
 ## Decisions
 
@@ -301,6 +329,45 @@ optional chrome in two stages rather than forking the layout:
 Everything returns when the keyboard closes. Both flags come from
 `context` helpers in the design layer, so the size comparisons live in one
 place.
+
+## Screen chrome: scrolling header, pinned dashboard
+
+All five tabs share the same shape now: the whole screen is one
+`CustomScrollView`, not a `Column` of fixed chrome around a scrolling body.
+
+- `AppScreenHeader` is a plain scrolling sliver — it moves with the page,
+  buying back the vertical room it used to hold permanently.
+- The small stats dashboard beneath it (`AppSummaryStrip`,
+  `QueueSummaryStrip`, `ScanProgressStrip`) is wrapped in `AppPinnedSummary`
+  (`shared/widgets/layout/`), which sticks it to the top once scrolled there
+  and shrinks it to a one-line `AppSummaryCompactLine`
+  (`shared/widgets/display/`) — the same figures read left to right instead
+  of stacked, not a different state.
+- `AppBottomActionBar` is the last sliver in the list rather than
+  `Scaffold.bottomNavigationBar` — it scrolls with the content instead of
+  staying pinned above the tab bar. Orders' "Open" bar is the one exception:
+  it stays pinned, since it is the single next action and only appears once
+  something is selected.
+
+Three things worth knowing before touching this:
+
+- **A `SliverPersistentHeader` needs a concrete pixel extent** — the one
+  place a box holding text has a fixed height, which rule 1c otherwise
+  forbids. `AppSizes.summaryStripExpandedHeight` /
+  `summaryStripCollapsedHeight` carry headroom for the app's own Gloved text
+  scale compounded with the OS's own accessibility scaling (~1.5× nominal).
+  `screens_responsive_test` is what actually proves it fits, not the numbers
+  themselves.
+- **Pass `startCollapsed` when the viewport is already short.** Scroll
+  position starts at zero, so without it a compact-height screen (landscape;
+  the keyboard up) would spend the full expanded extent on first paint,
+  before anything has been scrolled — exactly the space this exists to buy
+  back. Screens pass whatever "not enough room" condition they already use
+  elsewhere — `context.isCompactHeight`, or Scan's own `tight`.
+- **A sliver only builds what's near the viewport.** A widget test that taps
+  or reads text placed in a trailing sliver — the bottom action bar,
+  especially — has to scroll it into view first, or the finder returns
+  nothing. See `scrollUntilVisible` in `demo_path_test.dart`.
 
 ## Charts
 

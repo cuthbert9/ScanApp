@@ -13,10 +13,19 @@ class ColdChainBanner extends StatelessWidget {
     super.key,
     required this.temperatureC,
     required this.doorOpenSeconds,
+    this.needsAttention = false,
+    this.statusLabel = 'stable',
   });
 
   final double? temperatureC;
   final int? doorOpenSeconds;
+
+  /// Derived on [ColdChainLog], not decided here — the door has been open too
+  /// long, or a reading has left the band.
+  final bool needsAttention;
+
+  /// `stable`, `door open`, `excursion`.
+  final String statusLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +35,7 @@ class ColdChainBanner extends StatelessWidget {
     final List<String> readings = <String>[
       if (temperatureC != null) '${temperatureC!.toStringAsFixed(1)} °C',
       if (doorOpenSeconds != null) 'DOOR ${doorOpenSeconds}s',
+      statusLabel.toUpperCase(),
     ];
 
     return Container(
@@ -34,7 +44,9 @@ class ColdChainBanner extends StatelessWidget {
         vertical: spacing.sm,
       ),
       decoration: BoxDecoration(
-        color: colors.coldChainSurface,
+        color: needsAttention
+            ? colors.statusBlockedSurface
+            : colors.coldChainSurface,
         borderRadius: context.radii.cardBorder,
       ),
       child: Row(
@@ -42,7 +54,7 @@ class ColdChainBanner extends StatelessWidget {
           Icon(
             Icons.ac_unit,
             size: context.sizes.iconMd,
-            color: colors.coldChain,
+            color: needsAttention ? colors.warning : colors.coldChain,
             semanticLabel: 'Cold chain',
           ),
           SizedBox(width: spacing.sm),
@@ -50,7 +62,9 @@ class ColdChainBanner extends StatelessWidget {
           // them off a 320 dp row.
           Expanded(
             child: Text(
-              'Cold unit verified',
+              needsAttention
+                  ? 'Cold chain needs attention'
+                  : 'Cold unit verified',
               style: context.type.labelMd.copyWith(
                 color: colors.onColdChainSurface,
               ),

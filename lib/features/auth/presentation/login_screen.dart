@@ -50,15 +50,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Icon(
-                Icons.local_shipping_outlined,
-                size: context.sizes.iconXl,
-                color: colors.onHeaderMuted,
-              ),
-              SizedBox(height: spacing.lg),
+              // style-ok: one-off login wordmark — the app's only logotype,
+              // wider-tracked than any token carries for actual body text.
               Text(
-                'scanapp',
-                style: context.type.headingLg.copyWith(color: colors.onHeader),
+                'MSD',
+                style: context.type.displayLg.copyWith(
+                  color: colors.onHeader,
+                  letterSpacing: 12,
+                ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: spacing.xs),
@@ -91,14 +90,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               SizedBox(height: spacing.xl),
               FilledButton(onPressed: _submit, child: const Text('Sign in')),
-              SizedBox(height: spacing.md),
-              Text(
-                'Any credentials are accepted while sign-in is a stub.',
-                style: context.type.caption.copyWith(
-                  color: colors.onHeaderMuted,
-                ),
-                textAlign: TextAlign.center,
-              ),
             ],
           ),
         ),

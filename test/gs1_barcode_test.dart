@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scanapp/features/loading/domain/gs1_barcode.dart';
+import 'package:scanapp/domain/models/gs1_barcode.dart';
 
 /// The parser is the most bug-prone code in the scan feature and is pure Dart,
 /// so it gets tested directly rather than through a widget.

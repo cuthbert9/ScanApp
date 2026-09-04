@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
+import '../../../../domain/models/gs1_barcode.dart';
+import '../../../../domain/models/order_line.dart';
+import '../../../../domain/models/scan_event.dart';
 import '../../../../shared/widgets/widgets.dart';
-import '../../domain/scan_record.dart';
-import '../../domain/scan_verdict.dart';
 import 'gs1_meta_line.dart';
 
 /// One line of the scan feed.
@@ -12,21 +13,41 @@ import 'gs1_meta_line.dart';
 /// is not enough: the device is read in a dim aisle, through safety glasses, by
 /// operators who may be colour-blind.
 class ScanFeedRow extends StatelessWidget {
-  const ScanFeedRow({super.key, required this.record});
+  const ScanFeedRow({super.key, required this.event});
 
-  final ScanRecord record;
+  final ScanEvent event;
 
-  AppBadgeVariant get _badgeVariant => switch (record.verdict) {
-    ScanVerdict.ok => AppBadgeVariant.success,
-    ScanVerdict.hold => AppBadgeVariant.blocked,
-    ScanVerdict.unknown => AppBadgeVariant.danger,
+  AppBadgeVariant get _badgeVariant => switch (event.result) {
+    ScanResult.ok => AppBadgeVariant.success,
+    ScanResult.hold => AppBadgeVariant.blocked,
+    ScanResult.duplicate => AppBadgeVariant.pending,
+    ScanResult.wrongOrder => AppBadgeVariant.danger,
   };
 
-  Color _edgeColor(AppColors colors) => switch (record.verdict) {
-    ScanVerdict.ok => colors.success,
-    ScanVerdict.hold => colors.statusActive,
-    ScanVerdict.unknown => colors.danger,
+  Color _edgeColor(AppColors colors) => switch (event.result) {
+    ScanResult.ok => colors.success,
+    ScanResult.hold => colors.statusActive,
+    ScanResult.duplicate => colors.borderStrong,
+    ScanResult.wrongOrder => colors.danger,
   };
+
+  /// The monospaced detail line, assembled from the line this code resolved to.
+  List<Gs1Segment> get _segments {
+    final List<Gs1Segment> parts = <Gs1Segment>[];
+    final OrderLine? line = event.line;
+
+    if (line != null) {
+      parts
+        ..add(Gs1Segment(ai: '00', text: line.sscc))
+        ..add(Gs1Segment(ai: '10', text: line.lot))
+        ..add(Gs1Segment(text: 'EXP ${line.expiryLabel}'));
+    } else if (event.rawCode.isNotEmpty) {
+      parts.add(Gs1Segment(text: event.rawCode));
+    }
+    if (event.reason != null) parts.add(Gs1Segment(text: event.reason!));
+    if (parts.isEmpty) parts.add(const Gs1Segment(text: '—'));
+    return parts;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,25 +80,21 @@ class ScanFeedRow extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Row(
-              // Centre rather than baseline: the product label can wrap to two
-              // lines, and baseline alignment against a wrapping child aligns
-              // to the first line and leaves the badge floating.
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  '${record.sequence}',
+                  '${event.seq}',
                   style: context.type.dataMd.copyWith(color: colors.dataMuted),
                 ),
                 SizedBox(width: spacing.sm),
-                // Expanded: product names run long and would otherwise
-                // overflow the row at 320 dp.
-                Expanded(child: _ProductLabel(record: record)),
+                // Expanded: product names run long and would otherwise overflow
+                // the row at 320 dp.
+                Expanded(child: _ProductLabel(event: event)),
                 SizedBox(width: spacing.sm),
-                AppBadge(label: record.verdict.label, variant: _badgeVariant),
+                AppBadge(label: event.result.label, variant: _badgeVariant),
               ],
             ),
             SizedBox(height: spacing.xs),
-            Gs1MetaLine(segments: record.segments),
+            Gs1MetaLine(segments: _segments),
           ],
         ),
       ),
@@ -85,11 +102,11 @@ class ScanFeedRow extends StatelessWidget {
   }
 }
 
-/// `Zinc Sulfate 20 mg × 500` — name emphasised, quantity secondary.
+/// `Zinc Sulfate 20 mg ×500` — name emphasised, quantity secondary.
 class _ProductLabel extends StatelessWidget {
-  const _ProductLabel({required this.record});
+  const _ProductLabel({required this.event});
 
-  final ScanRecord record;
+  final ScanEvent event;
 
   @override
   Widget build(BuildContext context) {
@@ -98,12 +115,12 @@ class _ProductLabel extends StatelessWidget {
       TextSpan(
         children: <TextSpan>[
           TextSpan(
-            text: record.productName,
+            text: event.productName,
             style: context.type.headingSm.copyWith(color: colors.textPrimary),
           ),
-          if (record.quantity > 0)
+          if (event.quantity > 0)
             TextSpan(
-              text: '  × ${record.quantity}',
+              text: '  × ${event.quantity}',
               style: context.type.bodyMd.copyWith(color: colors.textTertiary),
             ),
         ],

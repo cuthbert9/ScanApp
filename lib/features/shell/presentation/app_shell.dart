@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/design.dart';
-import '../../../core/sync/application/sync_queue_controller.dart';
+import '../../../app/state/sync_controller.dart';
 import '../../../shared/widgets/widgets.dart';
 
 /// One entry in the bottom navigation.

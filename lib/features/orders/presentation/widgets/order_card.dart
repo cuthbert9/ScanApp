@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
 import '../../../../shared/widgets/widgets.dart';
-import '../../domain/loading_order.dart';
-import '../../domain/order_status.dart';
+import '../../../../domain/models/order.dart';
 
 /// One row of the loading queue.
 ///
@@ -18,7 +17,7 @@ class OrderCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final LoadingOrder order;
+  final Order order;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -27,9 +26,8 @@ class OrderCard extends StatelessWidget {
   AppBadgeVariant get _badgeVariant => switch (order.status) {
     OrderStatus.loading => AppBadgeVariant.active,
     OrderStatus.queued => AppBadgeVariant.pending,
-    OrderStatus.loaded => AppBadgeVariant.success,
-    OrderStatus.noTruck => AppBadgeVariant.blocked,
-    OrderStatus.held => AppBadgeVariant.danger,
+    OrderStatus.sealed => AppBadgeVariant.success,
+    OrderStatus.awaitingTruck => AppBadgeVariant.blocked,
   };
 
   @override
@@ -69,7 +67,7 @@ class OrderCard extends StatelessWidget {
                           // ("Morogoro Regional Medical Store") and would
                           // otherwise overflow at 320 dp.
                           Expanded(child: _FacilityLabel(order: order)),
-                          if (order.isColdChain) ...<Widget>[
+                          if (order.coldChain) ...<Widget>[
                             SizedBox(width: spacing.xs),
                             Icon(
                               Icons.ac_unit,
@@ -90,9 +88,9 @@ class OrderCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (order.hasProgress)
+                if (order.progress > 0)
                   LinearProgressIndicator(
-                    value: order.loadProgress,
+                    value: order.progress,
                     minHeight: sizes.progressBarHeight,
                     backgroundColor: colors.progressTrack,
                     color: colors.progressFill,
@@ -110,7 +108,7 @@ class OrderCard extends StatelessWidget {
 class _FacilityLabel extends StatelessWidget {
   const _FacilityLabel({required this.order});
 
-  final LoadingOrder order;
+  final Order order;
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +117,9 @@ class _FacilityLabel extends StatelessWidget {
       color: colors.textPrimary,
     );
 
-    if (order.programme == null) {
+    if ((order.isEPI ? 'EPI' : null) == null) {
       return Text(
-        order.facility,
+        order.consignee,
         style: nameStyle,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -131,9 +129,9 @@ class _FacilityLabel extends StatelessWidget {
     return Text.rich(
       TextSpan(
         children: <TextSpan>[
-          TextSpan(text: order.facility, style: nameStyle),
+          TextSpan(text: order.consignee, style: nameStyle),
           TextSpan(
-            text: '  ·  ${order.programme}',
+            text: '  ·  ${(order.isEPI ? 'EPI' : null)}',
             style: context.type.labelMd.copyWith(color: colors.textTertiary),
           ),
         ],

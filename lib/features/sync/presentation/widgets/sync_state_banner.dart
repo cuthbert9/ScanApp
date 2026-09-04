@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
-import '../../../../core/sync/domain/sync_state.dart';
+import '../../../../domain/models/sync_status.dart';
 
 /// The active mode and what it is currently doing.
 ///
@@ -31,7 +31,7 @@ class SyncStateBanner extends StatelessWidget {
       SyncState.archiving => colors.info,
       SyncState.pushing => colors.primary,
       SyncState.retrying => colors.danger,
-      SyncState.clear => colors.textSecondary,
+      SyncState.upToDate => colors.textSecondary,
     };
 
     return Container(
