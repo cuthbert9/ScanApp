@@ -97,6 +97,12 @@ class ColdChainMonitor extends _$ColdChainMonitor {
       elapsedSeconds: elapsedSeconds,
     );
 
+    // The door timer lives with the Scan screen, but this await can still be
+    // in flight the moment that screen (and this provider with it) is torn
+    // down — leaving the app, in particular. Touching `state` after that
+    // throws.
+    if (!ref.mounted) return;
+
     final ColdChainLog? log = result.valueOrNull;
     if (log == null) return;
     state = AsyncData<ColdChainLog?>(log);

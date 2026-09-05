@@ -8,6 +8,14 @@ import '../../../core/design/design.dart';
 /// Promoted here from the orders feature once the scan screen needed the same
 /// header. Two features now use it and it carries no feature-specific logic,
 /// which is exactly the bar for `lib/shared/` (CLAUDE.md rule 2).
+///
+/// Carries no top-safe-area padding of its own. Every screen using this puts
+/// it inside a `CustomScrollView`, wrapped in `AppPinnedSummary` further
+/// down — and once that strip is pinned, it can end up sitting at the very
+/// top of the viewport, past where this header has scrolled. The caller's
+/// `SafeArea(top: true)` around the whole `CustomScrollView` is what keeps
+/// *both* clear of the status bar, at every scroll position — not just this
+/// header's own first frame.
 class AppScreenHeader extends StatelessWidget {
   const AppScreenHeader({
     super.key,
@@ -42,59 +50,56 @@ class AppScreenHeader extends StatelessWidget {
 
     return ColoredBox(
       color: colors.headerSurface,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            onBack == null ? spacing.lg : spacing.xs,
-            spacing.sm,
-            spacing.xs,
-            spacing.md,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (onBack != null)
-                IconButton(
-                  onPressed: onBack,
-                  icon: const Icon(Icons.chevron_left),
-                  color: colors.onHeader,
-                  iconSize: context.sizes.iconLg,
-                  tooltip: 'Back',
-                ),
-              // Expanded so a long title ellipsises instead of overflowing the
-              // row on a 320 dp screen.
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(top: spacing.sm),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        title,
-                        style: context.type.headingMd.copyWith(
-                          color: colors.onHeader,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          onBack == null ? spacing.lg : spacing.xs,
+          spacing.sm,
+          spacing.xs,
+          spacing.md,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (onBack != null)
+              IconButton(
+                onPressed: onBack,
+                icon: const Icon(Icons.chevron_left),
+                color: colors.onHeader,
+                iconSize: context.sizes.iconLg,
+                tooltip: 'Back',
+              ),
+            // Expanded so a long title ellipsises instead of overflowing the
+            // row on a 320 dp screen.
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(top: spacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      style: context.type.headingMd.copyWith(
+                        color: colors.onHeader,
                       ),
-                      SizedBox(height: spacing.xxs),
-                      Text(
-                        '$tripReference  ·  $hub',
-                        style: context.type.overline.copyWith(
-                          color: colors.onHeaderMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: spacing.xxs),
+                    Text(
+                      '$tripReference  ·  $hub',
+                      style: context.type.overline.copyWith(
+                        color: colors.onHeaderMuted,
                       ),
-                    ],
-                  ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
-              _SyncAction(hasPending: hasPendingSync, onPressed: onSync),
-            ],
-          ),
+            ),
+            _SyncAction(hasPending: hasPendingSync, onPressed: onSync),
+          ],
         ),
       ),
     );

@@ -80,92 +80,99 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          if (!minimal) ...<Widget>[
+      // The outer SafeArea keeps the pinned strip clear of the status bar
+      // once it reaches the top — AppScreenHeader no longer carries that
+      // padding itself (see its doc comment).
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: CustomScrollView(
+          slivers: <Widget>[
+            if (!minimal) ...<Widget>[
+              SliverToBoxAdapter(
+                child: AppScreenHeader(
+                  title: 'Scan & Verify',
+                  tripReference:
+                      'BAY ${ref.watch(dockControllerProvider).value?.station.assignedBay ?? '—'}',
+                  hub: order.docNo,
+                  hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
+                  onBack: _toOrders,
+                  onSync: () =>
+                      ref.read(syncControllerProvider.notifier).refresh(),
+                ),
+              ),
+              // The keyboard-driven compact mode (not enough room) and the new
+              // scroll-driven one (scrolled past) both want the same one-line
+              // form, so `tight` simply forces it on the expanded slot too.
+              AppPinnedSummary(
+                startCollapsed: tight,
+                expandedExtent: context.sizes.scanProgressStripExpandedHeight,
+                expanded: ScanProgressStrip(
+                  loaded: order.verifiedUnits,
+                  expected: order.units,
+                  verified: order.verifiedUnits,
+                  held: order.heldUnits,
+                  compact: tight,
+                ),
+                collapsed: ScanProgressStrip(
+                  loaded: order.verifiedUnits,
+                  expected: order.units,
+                  verified: order.verifiedUnits,
+                  held: order.heldUnits,
+                  compact: true,
+                ),
+              ),
+            ],
+            // The scan field is the primary hardware-trigger/DataWedge target,
+            // so — unlike the header above it — it stays put right after the
+            // pinned strip rather than scrolling away.
             SliverToBoxAdapter(
-              child: AppScreenHeader(
-                title: 'Scan & Verify',
-                tripReference:
-                    'BAY ${ref.watch(dockControllerProvider).value?.station.assignedBay ?? '—'}',
-                hub: order.docNo,
-                hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
-                onBack: _toOrders,
-                onSync: () =>
-                    ref.read(syncControllerProvider.notifier).refresh(),
-              ),
-            ),
-            // The keyboard-driven compact mode (not enough room) and the new
-            // scroll-driven one (scrolled past) both want the same one-line
-            // form, so `tight` simply forces it on the expanded slot too.
-            AppPinnedSummary(
-              startCollapsed: tight,
-              expandedExtent: context.sizes.scanProgressStripExpandedHeight,
-              expanded: ScanProgressStrip(
-                loaded: order.verifiedUnits,
-                expected: order.units,
-                verified: order.verifiedUnits,
-                held: order.heldUnits,
-                compact: tight,
-              ),
-              collapsed: ScanProgressStrip(
-                loaded: order.verifiedUnits,
-                expected: order.units,
-                verified: order.verifiedUnits,
-                held: order.heldUnits,
-                compact: true,
-              ),
-            ),
-          ],
-          // The scan field is the primary hardware-trigger/DataWedge target,
-          // so — unlike the header above it — it stays put right after the
-          // pinned strip rather than scrolling away.
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                spacing.md,
-                spacing.md,
-                spacing.md,
-                spacing.sm,
-              ),
-              // Long-press is the debug trigger standing in for a hardware
-              // trigger pull; typing a code is the other debug path.
-              child: GestureDetector(
-                onLongPress: kDebugMode
-                    ? () => ref.read(scanFeedProvider.notifier).simulate()
-                    : null,
-                child: ScanInputField(
-                  showLabel: !minimal,
-                  onSubmitted: (String raw) =>
-                      ref.read(scanFeedProvider.notifier).scanCode(raw),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  spacing.md,
+                  spacing.md,
+                  spacing.md,
+                  spacing.sm,
+                ),
+                // Long-press is the debug trigger standing in for a hardware
+                // trigger pull; typing a code is the other debug path.
+                child: GestureDetector(
+                  onLongPress: kDebugMode
+                      ? () => ref.read(scanFeedProvider.notifier).simulate()
+                      : null,
+                  child: ScanInputField(
+                    showLabel: !minimal,
+                    onSubmitted: (String raw) =>
+                        ref.read(scanFeedProvider.notifier).scanCode(raw),
+                  ),
                 ),
               ),
             ),
-          ),
-          // The banner watches the log itself, so the once-a-second tick
-          // rebuilds a 40 dp strip rather than the whole screen and its feed.
-          if (!tight) const SliverToBoxAdapter(child: _ColdChainStrip()),
-          switch (feed) {
-            AsyncData<List<ScanEvent>>(:final List<ScanEvent> value) =>
-              _ScanFeedList(events: value),
-            AsyncError<List<ScanEvent>>(:final Object error) => _ScanError(
-              error: error,
-            ),
-            _ => const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          },
-          if (!minimal)
-            SliverToBoxAdapter(
-              child: AppBottomActionBar(
-                secondaryLabel: 'Manifest',
-                onSecondary: _toOrders,
-                primaryLabel: 'Reconcile',
-                onPrimary: _toReconcile,
+            // The banner watches the log itself, so the once-a-second tick
+            // rebuilds a 40 dp strip rather than the whole screen and its feed.
+            if (!tight) const SliverToBoxAdapter(child: _ColdChainStrip()),
+            switch (feed) {
+              AsyncData<List<ScanEvent>>(:final List<ScanEvent> value) =>
+                _ScanFeedList(events: value),
+              AsyncError<List<ScanEvent>>(:final Object error) => _ScanError(
+                error: error,
               ),
-            ),
-        ],
+              _ => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            },
+            if (!minimal)
+              SliverToBoxAdapter(
+                child: AppBottomActionBar(
+                  secondaryLabel: 'Manifest',
+                  onSecondary: _toOrders,
+                  primaryLabel: 'Reconcile',
+                  onPrimary: _toReconcile,
+                ),
+              ),
+          ],
+        ),
       ),
       floatingActionButton: kDebugMode && !minimal
           ? FloatingActionButton.small(

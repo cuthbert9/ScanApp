@@ -281,27 +281,49 @@ the same provider.
 
 ## Testing
 
-43 tests, four files:
+44 tests, four files:
 
 | File | Covers |
 |---|---|
 | `mock_backend_test.dart` | The rules, directly — the scan ladder in order, FEFO, sealing amended, a sealed order refusing scans, flushing, air-gapped refusal, simulated offline, station re-sync. No widgets. |
 | `gs1_barcode_test.dart` | The GS1 parser — bracketed, concatenated, FNC1, bare EANs, expiry edge cases, malformed input. |
 | `demo_path_test.dart` | The whole flow through the real router and shell: open an order, debug-scan, reconcile, seal, watch it leave the queue, flush the badge, switch theme. |
-| `screens_responsive_test.dart` | All five tabs at portrait, landscape, and both at font scale 1.3, asserting no `RenderFlex overflowed`. |
+| `screens_responsive_test.dart` | All five tabs at portrait, landscape, and both at font scale 1.3, asserting no `RenderFlex overflowed`; plus a simulated-status-bar sweep asserting every screen's scrollable viewport starts below the inset. |
 
 Rules are tested at the backend rather than through widgets, which is the whole
 point of keeping them there. The demo path is the integration test; the
 responsive sweep is the layout safety net.
 
-Three test-authoring traps worth remembering. Inside `testWidgets` the clock is
-faked, so awaiting a repository future before any `pump()` never completes.
-The shell's `IndexedStack` keeps every screen mounted, so a bare
-`find.byType(CustomScrollView)` (or `ListView`) matches several — scope
-finders to the screen you mean. And since every screen is now one scrolling
-sliver list, a widget placed near the bottom — the bottom action bar most of
-all — is not built until scrolled near the viewport; `find` on it returns
-nothing until then, not a "not visible yet" hint.
+Test-authoring traps worth remembering:
+
+- Inside `testWidgets` the clock is faked, so awaiting a repository future
+  before any `pump()` never completes.
+- The shell's `IndexedStack` keeps every screen mounted, so a bare
+  `find.byType(CustomScrollView)` (or `ListView`) matches several — scope
+  finders to the screen you mean.
+- Every screen is one scrolling sliver list, so a widget placed near the
+  bottom — the bottom action bar most of all — is not built until scrolled
+  near the viewport; `find` on it returns nothing until then, not a
+  "not visible yet" hint.
+- `Semantics(label: ..., child: ...)` merges with a descendant's own implicit
+  label unless it also sets `excludeSemantics: true` — the tab bar's
+  `Semantics(label: 'Orders', child: ... Text('ORDERS') ...)` was missing it,
+  so the computed label was actually `"Orders\nORDERS"`, and
+  `find.bySemanticsLabel('Orders')` (an exact match) silently found nothing.
+  This had been quietly turning `screens_responsive_test`'s tab walk into a
+  no-op for every tab — the loop's `if (finder.evaluate().isEmpty) continue;`
+  swallowed it rather than failing, so it looked green while only ever
+  exercising the Orders tab. Fixed in `AppShell`'s `_TabButton`; worth an
+  exact-match sanity check (`find.bySemanticsLabel('X')`, not just
+  `find.byIcon(...)`) whenever a "walk every tab" helper is added anywhere.
+- Forcing a full-tree teardown mid-test (`pumpWidget(const SizedBox())`, to
+  unmount and dispose everything) can race a `Timer`/provider callback that
+  was already in flight — the Scan screen's cold-chain door ticker hit this:
+  disposal beat its pending `tick()` call, which then threw setting `state`
+  after the provider was gone. Riverpod's fix is `if (!ref.mounted) return;`
+  right after the `await`, before touching `state` — not a test-only
+  workaround, since the same race exists on a real device the instant the app
+  is killed mid-tick.
 
 ## Decisions
 
@@ -349,15 +371,23 @@ All five tabs share the same shape now: the whole screen is one
   it stays pinned, since it is the single next action and only appears once
   something is selected.
 
-Three things worth knowing before touching this:
+Four things worth knowing before touching this:
 
 - **A `SliverPersistentHeader` needs a concrete pixel extent** — the one
   place a box holding text has a fixed height, which rule 1c otherwise
-  forbids. `AppSizes.summaryStripExpandedHeight` /
-  `summaryStripCollapsedHeight` carry headroom for the app's own Gloved text
-  scale compounded with the OS's own accessibility scaling (~1.5× nominal).
-  `screens_responsive_test` is what actually proves it fits, not the numbers
-  themselves.
+  forbids. `AppSizes.summaryStripExpandedHeight` / `summaryStripCollapsedHeight`
+  / `scanProgressStripExpandedHeight` (Scan's form carries a ring, so it needs
+  more room) are each the strip's real, unstretched content height at text
+  scale 1.0 — not padded upfront. `AppPinnedSummary` scales both extents live
+  by the device's actual text scale (`MediaQuery.textScalerOf(context)`, the
+  same technique `_TextScale` uses in `app/app.dart`), so the common case
+  stays exactly this size and only grows when text actually does. An earlier
+  version padded the tokens flat instead — the dashboard rendered visibly
+  larger than the mockups at normal scale, because `StackFit.expand` stretched
+  the content to fill that padding rather than leaving it unused. Fixed by
+  measuring the real content height and scaling live instead of padding
+  statically — see `AppPinnedSummary`'s `_NaturalHeight`/`OverflowBox` for how
+  it avoids re-stretching.
 - **Pass `startCollapsed` when the viewport is already short.** Scroll
   position starts at zero, so without it a compact-height screen (landscape;
   the keyboard up) would spend the full expanded extent on first paint,
@@ -368,6 +398,14 @@ Three things worth knowing before touching this:
   or reads text placed in a trailing sliver — the bottom action bar,
   especially — has to scroll it into view first, or the finder returns
   nothing. See `scrollUntilVisible` in `demo_path_test.dart`.
+- **`AppScreenHeader` carries no top-safe-area padding of its own.** It used
+  to, back when it was always the first thing on screen. Now that a pinned
+  strip can end up sitting at the very top of the viewport once the header has
+  scrolled away, the inset has to protect *whatever is pinned there*, not just
+  the header's own first frame — so each screen wraps its whole
+  `CustomScrollView` in `SafeArea(top: true, bottom: false)` instead. Forgetting
+  this on a new screen re-creates the exact bug it fixed: the dashboard
+  colliding with the status bar once scrolled.
 
 ## Charts
 

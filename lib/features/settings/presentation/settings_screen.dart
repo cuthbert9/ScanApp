@@ -75,80 +75,86 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(
-            child: AppScreenHeader(
-              title: 'Settings',
-              tripReference: data?.device.serial ?? '—',
-              hub: data == null ? '—' : 'APP ${data.device.appVersion}',
-              hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
-              onBack: () => _toOrders(context),
-              onSync: () =>
-                  ref.read(settingsControllerProvider.notifier).refresh(),
+      // The outer SafeArea keeps the pinned strip clear of the status bar
+      // once it reaches the top — AppScreenHeader no longer carries that
+      // padding itself (see its doc comment).
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverToBoxAdapter(
+              child: AppScreenHeader(
+                title: 'Settings',
+                tripReference: data?.device.serial ?? '—',
+                hub: data == null ? '—' : 'APP ${data.device.appVersion}',
+                hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
+                onBack: () => _toOrders(context),
+                onSync: () =>
+                    ref.read(settingsControllerProvider.notifier).refresh(),
+              ),
             ),
-          ),
-          AppPinnedSummary(
-            startCollapsed: context.isCompactHeight,
-            expanded: AppSummaryStrip(
-              cells: <Widget>[
-                AppStatTile(
-                  value: '${data?.stats.unitsScanned ?? 0}',
-                  label: 'Scans today',
-                ),
-                AppStatTile(
-                  value: data?.stats.firstPassLabel ?? '—',
-                  unit: '%',
-                  label: 'First pass',
-                  accent: StatAccent.success,
-                ),
-                AppStatTile(value: onShiftLabel, label: 'On shift'),
-              ],
+            AppPinnedSummary(
+              startCollapsed: context.isCompactHeight,
+              expanded: AppSummaryStrip(
+                cells: <Widget>[
+                  AppStatTile(
+                    value: '${data?.stats.unitsScanned ?? 0}',
+                    label: 'Scans today',
+                  ),
+                  AppStatTile(
+                    value: data?.stats.firstPassLabel ?? '—',
+                    unit: '%',
+                    label: 'First pass',
+                    accent: StatAccent.success,
+                  ),
+                  AppStatTile(value: onShiftLabel, label: 'On shift'),
+                ],
+              ),
+              collapsed: AppSummaryStrip(
+                dense: true,
+                cells: <Widget>[
+                  AppSummaryCompactLine(
+                    items: <AppSummaryCompactItem>[
+                      AppSummaryCompactItem(
+                        value: '${data?.stats.unitsScanned ?? 0}',
+                        label: 'Scans today',
+                      ),
+                      AppSummaryCompactItem(
+                        value: '${data?.stats.firstPassLabel ?? '—'}%',
+                        label: 'First pass',
+                        accent: StatAccent.success,
+                      ),
+                      AppSummaryCompactItem(
+                        value: onShiftLabel,
+                        label: 'On shift',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            collapsed: AppSummaryStrip(
-              dense: true,
-              cells: <Widget>[
-                AppSummaryCompactLine(
-                  items: <AppSummaryCompactItem>[
-                    AppSummaryCompactItem(
-                      value: '${data?.stats.unitsScanned ?? 0}',
-                      label: 'Scans today',
-                    ),
-                    AppSummaryCompactItem(
-                      value: '${data?.stats.firstPassLabel ?? '—'}%',
-                      label: 'First pass',
-                      accent: StatAccent.success,
-                    ),
-                    AppSummaryCompactItem(
-                      value: onShiftLabel,
-                      label: 'On shift',
-                    ),
-                  ],
-                ),
-              ],
+            switch (async) {
+              AsyncData<SettingsView>(:final SettingsView value) =>
+                _SettingsBody(data: value),
+              AsyncError<SettingsView>(:final Object error) => _SettingsError(
+                error: error,
+              ),
+              _ => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            },
+            SliverToBoxAdapter(
+              child: AppBottomActionBar(
+                secondaryLabel: 'Sign out',
+                onSecondary: () => _signOut(context, ref),
+                primaryLabel: 'Done',
+                onPrimary: () => _toOrders(context),
+              ),
             ),
-          ),
-          switch (async) {
-            AsyncData<SettingsView>(:final SettingsView value) => _SettingsBody(
-              data: value,
-            ),
-            AsyncError<SettingsView>(:final Object error) => _SettingsError(
-              error: error,
-            ),
-            _ => const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          },
-          SliverToBoxAdapter(
-            child: AppBottomActionBar(
-              secondaryLabel: 'Sign out',
-              onSecondary: () => _signOut(context, ref),
-              primaryLabel: 'Done',
-              onPrimary: () => _toOrders(context),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

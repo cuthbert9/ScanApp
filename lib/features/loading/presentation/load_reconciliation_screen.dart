@@ -80,73 +80,81 @@ class _LoadReconciliationScreenState
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(
-            child: AppScreenHeader(
-              title: 'Load Reconciliation',
-              tripReference: 'BAY ${dock?.station.assignedBay ?? '—'}',
-              hub: order.docNo,
-              hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
-              onBack: _toScan,
-              onSync: () => ref.read(dockControllerProvider.notifier).refresh(),
+      // The outer SafeArea keeps the pinned strip clear of the status bar
+      // once it reaches the top — AppScreenHeader no longer carries that
+      // padding itself (see its doc comment).
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverToBoxAdapter(
+              child: AppScreenHeader(
+                title: 'Load Reconciliation',
+                tripReference: 'BAY ${dock?.station.assignedBay ?? '—'}',
+                hub: order.docNo,
+                hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
+                onBack: _toScan,
+                onSync: () =>
+                    ref.read(dockControllerProvider.notifier).refresh(),
+              ),
             ),
-          ),
-          AppPinnedSummary(
-            startCollapsed: context.isCompactHeight,
-            expanded: AppSummaryStrip(
-              cells: <Widget>[
-                AppStatTile(value: '${order.units}', label: 'Ordered'),
-                AppStatTile(
-                  value: '${order.verifiedUnits}',
-                  label: 'Verified',
-                  accent: StatAccent.success,
-                ),
-                AppStatTile(
-                  value: '${order.shortUnits}',
-                  label: 'Short',
-                  accent: order.shortUnits > 0
-                      ? StatAccent.warning
-                      : StatAccent.none,
-                ),
-              ],
+            AppPinnedSummary(
+              startCollapsed: context.isCompactHeight,
+              expanded: AppSummaryStrip(
+                cells: <Widget>[
+                  AppStatTile(value: '${order.units}', label: 'Ordered'),
+                  AppStatTile(
+                    value: '${order.verifiedUnits}',
+                    label: 'Verified',
+                    accent: StatAccent.success,
+                  ),
+                  AppStatTile(
+                    value: '${order.shortUnits}',
+                    label: 'Short',
+                    accent: order.shortUnits > 0
+                        ? StatAccent.warning
+                        : StatAccent.none,
+                  ),
+                ],
+              ),
+              collapsed: AppSummaryStrip(
+                dense: true,
+                cells: <Widget>[
+                  AppSummaryCompactLine(
+                    items: <AppSummaryCompactItem>[
+                      AppSummaryCompactItem(
+                        value: '${order.units}',
+                        label: 'Ordered',
+                      ),
+                      AppSummaryCompactItem(
+                        value: '${order.verifiedUnits}',
+                        label: 'Verified',
+                        accent: StatAccent.success,
+                      ),
+                      AppSummaryCompactItem(
+                        value: '${order.shortUnits}',
+                        label: 'Short',
+                        accent: order.shortUnits > 0
+                            ? StatAccent.warning
+                            : StatAccent.none,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            collapsed: AppSummaryStrip(
-              dense: true,
-              cells: <Widget>[
-                AppSummaryCompactLine(
-                  items: <AppSummaryCompactItem>[
-                    AppSummaryCompactItem(
-                      value: '${order.units}',
-                      label: 'Ordered',
-                    ),
-                    AppSummaryCompactItem(
-                      value: '${order.verifiedUnits}',
-                      label: 'Verified',
-                      accent: StatAccent.success,
-                    ),
-                    AppSummaryCompactItem(
-                      value: '${order.shortUnits}',
-                      label: 'Short',
-                      accent: order.shortUnits > 0
-                          ? StatAccent.warning
-                          : StatAccent.none,
-                    ),
-                  ],
-                ),
-              ],
+            _Ledger(order: order),
+            SliverToBoxAdapter(
+              child: AppBottomActionBar(
+                secondaryLabel: 'Back',
+                onSecondary: _toScan,
+                primaryLabel: 'Seal load',
+                onPrimary: canSeal ? () => _seal(order) : null,
+              ),
             ),
-          ),
-          _Ledger(order: order),
-          SliverToBoxAdapter(
-            child: AppBottomActionBar(
-              secondaryLabel: 'Back',
-              onSecondary: _toScan,
-              primaryLabel: 'Seal load',
-              onPrimary: canSeal ? () => _seal(order) : null,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

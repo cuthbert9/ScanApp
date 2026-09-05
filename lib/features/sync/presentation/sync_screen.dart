@@ -29,130 +29,138 @@ class SyncScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(
-            child: AppScreenHeader(
-              title: 'Offline Sync',
-              tripReference: queue?.tripReference ?? '—',
-              hub: queue?.hub ?? '—',
-              hasPendingSync: (queue?.pendingCount ?? 0) > 0,
-              onBack: () => StatefulNavigationShell.of(context).goBranch(0),
-              onSync: () => ref.read(syncControllerProvider.notifier).refresh(),
-            ),
-          ),
-          AppPinnedSummary(
-            startCollapsed: context.isCompactHeight,
-            expanded: AppSummaryStrip(
-              cells: <Widget>[
-                AppStatTile(
-                  value: '${queue?.pendingCount ?? 0}',
-                  label: 'Pending',
-                  accent: (queue?.pendingCount ?? 0) > 0
-                      ? StatAccent.warning
-                      : StatAccent.none,
-                ),
-                AppStatTile(
-                  value: '${queue?.failedCount ?? 0}',
-                  label: 'Failed',
-                  accent: (queue?.failedCount ?? 0) > 0
-                      ? StatAccent.warning
-                      : StatAccent.none,
-                ),
-                AppStatTile(
-                  value: queue?.lastPushLabel ?? '—',
-                  label: 'Last push',
-                ),
-              ],
-            ),
-            collapsed: AppSummaryStrip(
-              dense: true,
-              cells: <Widget>[
-                AppSummaryCompactLine(
-                  items: <AppSummaryCompactItem>[
-                    AppSummaryCompactItem(
-                      value: '${queue?.pendingCount ?? 0}',
-                      label: 'Pending',
-                      accent: (queue?.pendingCount ?? 0) > 0
-                          ? StatAccent.warning
-                          : StatAccent.none,
-                    ),
-                    AppSummaryCompactItem(
-                      value: '${queue?.failedCount ?? 0}',
-                      label: 'Failed',
-                      accent: (queue?.failedCount ?? 0) > 0
-                          ? StatAccent.warning
-                          : StatAccent.none,
-                    ),
-                    AppSummaryCompactItem(
-                      value: queue?.lastPushLabel ?? '—',
-                      label: 'Last push',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Scrolls with the body now rather than staying pinned above it —
-          // still ahead of the mode cards, so the "what is it doing right
-          // now" line is read before the three options that set it.
-          if (queue != null)
+      // The outer SafeArea keeps the pinned strip clear of the status bar
+      // once it reaches the top — AppScreenHeader no longer carries that
+      // padding itself (see its doc comment).
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: CustomScrollView(
+          slivers: <Widget>[
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  context.spacing.md,
-                  context.spacing.md,
-                  context.spacing.md,
-                  context.spacing.none,
-                ),
-                child: SyncStateBanner(
-                  modeTitle: queue.mode.title,
-                  state: queue.state,
-                ),
+              child: AppScreenHeader(
+                title: 'Offline Sync',
+                tripReference: queue?.tripReference ?? '—',
+                hub: queue?.hub ?? '—',
+                hasPendingSync: (queue?.pendingCount ?? 0) > 0,
+                onBack: () => StatefulNavigationShell.of(context).goBranch(0),
+                onSync: () =>
+                    ref.read(syncControllerProvider.notifier).refresh(),
               ),
             ),
-          switch (async) {
-            AsyncData<SyncStatus>(:final SyncStatus value) => _SyncBody(
-              queue: value,
+            AppPinnedSummary(
+              startCollapsed: context.isCompactHeight,
+              expanded: AppSummaryStrip(
+                cells: <Widget>[
+                  AppStatTile(
+                    value: '${queue?.pendingCount ?? 0}',
+                    label: 'Pending',
+                    accent: (queue?.pendingCount ?? 0) > 0
+                        ? StatAccent.warning
+                        : StatAccent.none,
+                  ),
+                  AppStatTile(
+                    value: '${queue?.failedCount ?? 0}',
+                    label: 'Failed',
+                    accent: (queue?.failedCount ?? 0) > 0
+                        ? StatAccent.warning
+                        : StatAccent.none,
+                  ),
+                  AppStatTile(
+                    value: queue?.lastPushLabel ?? '—',
+                    label: 'Last push',
+                  ),
+                ],
+              ),
+              collapsed: AppSummaryStrip(
+                dense: true,
+                cells: <Widget>[
+                  AppSummaryCompactLine(
+                    items: <AppSummaryCompactItem>[
+                      AppSummaryCompactItem(
+                        value: '${queue?.pendingCount ?? 0}',
+                        label: 'Pending',
+                        accent: (queue?.pendingCount ?? 0) > 0
+                            ? StatAccent.warning
+                            : StatAccent.none,
+                      ),
+                      AppSummaryCompactItem(
+                        value: '${queue?.failedCount ?? 0}',
+                        label: 'Failed',
+                        accent: (queue?.failedCount ?? 0) > 0
+                            ? StatAccent.warning
+                            : StatAccent.none,
+                      ),
+                      AppSummaryCompactItem(
+                        value: queue?.lastPushLabel ?? '—',
+                        label: 'Last push',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            AsyncError<SyncStatus>(:final Object error) => _SyncError(
-              error: error,
-            ),
-            _ => const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          },
-          SliverToBoxAdapter(
-            child: AppBottomActionBar(
-              secondaryLabel: 'Back',
-              // Back returns to Orders, per the navigation graph.
-              onSecondary: () =>
-                  StatefulNavigationShell.of(context).goBranch(0),
-              primaryLabel: (queue?.isPushing ?? false)
-                  ? 'Pushing…'
-                  : 'Flush queue now',
-              // Disabled when nothing to send, or a push is already running.
-              onPrimary: (queue?.canFlush ?? false)
-                  ? () => ref.read(syncControllerProvider.notifier).flush()
-                  : (queue == null || queue.pending.isEmpty)
-                  ? null
-                  // Disabled for a reason the operator can act on —
-                  // air-gapped mode, or the debug offline switch — so say
-                  // which.
-                  : () => ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          queue.simulateOffline
-                              ? 'Simulated offline is on. Turn it off to '
-                                    'flush.'
-                              : queue.mode.flushBlockedReason,
+            // Scrolls with the body now rather than staying pinned above it —
+            // still ahead of the mode cards, so the "what is it doing right
+            // now" line is read before the three options that set it.
+            if (queue != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    context.spacing.md,
+                    context.spacing.md,
+                    context.spacing.md,
+                    context.spacing.none,
+                  ),
+                  child: SyncStateBanner(
+                    modeTitle: queue.mode.title,
+                    state: queue.state,
+                  ),
+                ),
+              ),
+            switch (async) {
+              AsyncData<SyncStatus>(:final SyncStatus value) => _SyncBody(
+                queue: value,
+              ),
+              AsyncError<SyncStatus>(:final Object error) => _SyncError(
+                error: error,
+              ),
+              _ => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            },
+            SliverToBoxAdapter(
+              child: AppBottomActionBar(
+                secondaryLabel: 'Back',
+                // Back returns to Orders, per the navigation graph.
+                onSecondary: () =>
+                    StatefulNavigationShell.of(context).goBranch(0),
+                primaryLabel: (queue?.isPushing ?? false)
+                    ? 'Pushing…'
+                    : 'Flush queue now',
+                // Disabled when nothing to send, or a push is already running.
+                onPrimary: (queue?.canFlush ?? false)
+                    ? () => ref.read(syncControllerProvider.notifier).flush()
+                    : (queue == null || queue.pending.isEmpty)
+                    ? null
+                    // Disabled for a reason the operator can act on —
+                    // air-gapped mode, or the debug offline switch — so say
+                    // which.
+                    : () => ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            queue.simulateOffline
+                                ? 'Simulated offline is on. Turn it off to '
+                                      'flush.'
+                                : queue.mode.flushBlockedReason,
+                          ),
                         ),
                       ),
-                    ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

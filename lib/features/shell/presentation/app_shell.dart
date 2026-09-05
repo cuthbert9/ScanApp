@@ -114,6 +114,10 @@ class _TabButton extends StatelessWidget {
       selected: isSelected,
       button: true,
       label: spec.label,
+      // Without this, the label merges with the tab's own visible text
+      // beneath it into "Orders\nORDERS" — a screen reader announcing the
+      // same word twice, and no exact match for either half.
+      excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
         child: Column(

@@ -34,84 +34,90 @@ class LoadingQueueScreen extends ConsumerWidget {
       // The header and dashboard scroll with the page; only the dashboard
       // sticks — and shrinks to one line — once it reaches the top
       // (CLAUDE.md rule 1c: this is what buys back vertical room on a
-      // 320x533 canvas).
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(dockControllerProvider.notifier).refresh(),
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: AppScreenHeader(
-                title: 'Loading Queue',
-                tripReference:
-                    ref.watch(syncControllerProvider).value?.tripReference ??
-                    '—',
-                hub: ref.watch(syncControllerProvider).value?.hub ?? '—',
-                hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
-                onSync: () =>
-                    ref.read(dockControllerProvider.notifier).refresh(),
-              ),
-            ),
-            AppPinnedSummary(
-              startCollapsed: context.isCompactHeight,
-              expanded: QueueSummaryStrip(
-                orderCount: orderCount,
-                unitCount: unitCount,
-                coldChainCount: coldChainCount,
-              ),
-              collapsed: AppSummaryStrip(
-                dense: true,
-                cells: <Widget>[
-                  AppSummaryCompactLine(
-                    items: <AppSummaryCompactItem>[
-                      AppSummaryCompactItem(
-                        value: '$orderCount',
-                        label: 'Orders',
-                      ),
-                      AppSummaryCompactItem(
-                        value: '$unitCount',
-                        label: 'Units',
-                      ),
-                      AppSummaryCompactItem(
-                        value: '$coldChainCount',
-                        label: 'Cold chain',
-                        accent: coldChainCount > 0
-                            ? StatAccent.coldChain
-                            : StatAccent.none,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            switch (dock) {
-              AsyncData<DockState>(:final DockState value) => _QueueBody(
-                state: value,
-              ),
-              AsyncError<DockState>(:final Object error) => _QueueError(
-                error: error,
-              ),
-              _ => const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            },
-            // Populated without a tap — it defaults to whichever order is being
-            // loaded — because the operator's hands are usually full. Scrolls
-            // with the content rather than staying pinned, per the same rule.
-            if (selected != null)
+      // 320x533 canvas). The outer SafeArea is what keeps the pinned strip
+      // clear of the status bar once it reaches the top — AppScreenHeader no
+      // longer carries that padding itself (see its doc comment).
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(dockControllerProvider.notifier).refresh(),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: <Widget>[
               SliverToBoxAdapter(
-                child: AppBottomActionBar(
-                  primaryLabel: 'Open',
-                  primaryDetail: selected.docNo,
-                  // Opening sets the Scan tab active; Scan reads the same
-                  // selection, so it needs no route parameter. It deliberately
-                  // does NOT mark the load viewed — sealing requires actually
-                  // opening the reconciliation screen.
-                  onPrimary: () => navigateToScan(context),
+                child: AppScreenHeader(
+                  title: 'Loading Queue',
+                  tripReference:
+                      ref.watch(syncControllerProvider).value?.tripReference ??
+                      '—',
+                  hub: ref.watch(syncControllerProvider).value?.hub ?? '—',
+                  hasPendingSync: ref.watch(pendingSyncCountProvider) > 0,
+                  onSync: () =>
+                      ref.read(dockControllerProvider.notifier).refresh(),
                 ),
               ),
-          ],
+              AppPinnedSummary(
+                startCollapsed: context.isCompactHeight,
+                expanded: QueueSummaryStrip(
+                  orderCount: orderCount,
+                  unitCount: unitCount,
+                  coldChainCount: coldChainCount,
+                ),
+                collapsed: AppSummaryStrip(
+                  dense: true,
+                  cells: <Widget>[
+                    AppSummaryCompactLine(
+                      items: <AppSummaryCompactItem>[
+                        AppSummaryCompactItem(
+                          value: '$orderCount',
+                          label: 'Orders',
+                        ),
+                        AppSummaryCompactItem(
+                          value: '$unitCount',
+                          label: 'Units',
+                        ),
+                        AppSummaryCompactItem(
+                          value: '$coldChainCount',
+                          label: 'Cold chain',
+                          accent: coldChainCount > 0
+                              ? StatAccent.coldChain
+                              : StatAccent.none,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              switch (dock) {
+                AsyncData<DockState>(:final DockState value) => _QueueBody(
+                  state: value,
+                ),
+                AsyncError<DockState>(:final Object error) => _QueueError(
+                  error: error,
+                ),
+                _ => const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              },
+              // Populated without a tap — it defaults to whichever order is being
+              // loaded — because the operator's hands are usually full. Scrolls
+              // with the content rather than staying pinned, per the same rule.
+              if (selected != null)
+                SliverToBoxAdapter(
+                  child: AppBottomActionBar(
+                    primaryLabel: 'Open',
+                    primaryDetail: selected.docNo,
+                    // Opening sets the Scan tab active; Scan reads the same
+                    // selection, so it needs no route parameter. It deliberately
+                    // does NOT mark the load viewed — sealing requires actually
+                    // opening the reconciliation screen.
+                    onPrimary: () => navigateToScan(context),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
