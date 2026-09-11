@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scanapp/app/app.dart';
-import 'package:scanapp/features/auth/application/auth_controller.dart';
+import 'package:scanapp/data/network_providers.dart';
 import 'package:scanapp/features/loading/presentation/load_reconciliation_screen.dart';
 import 'package:scanapp/features/loading/presentation/scan_screen.dart';
 import 'package:scanapp/features/orders/presentation/loading_queue_screen.dart';
 import 'package:scanapp/features/settings/presentation/settings_screen.dart';
 import 'package:scanapp/features/sync/presentation/sync_screen.dart';
+
+import 'support/fake_auth_repository.dart';
 
 /// Rule 1c: every screen must survive every canvas the MC9450 can present.
 ///
@@ -45,9 +47,12 @@ void main() {
     // checks for live handles before tear-downs run.
     final SemanticsHandle semantics = tester.ensureSemantics();
 
-    final ProviderContainer container = ProviderContainer();
+    final ProviderContainer container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(const FakeAuthRepository()),
+      ],
+    );
     addTearDown(container.dispose);
-    container.read(authControllerProvider.notifier).signIn();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -130,9 +135,12 @@ void main() {
     // checks for live handles before tear-downs run.
     final SemanticsHandle semantics = tester.ensureSemantics();
 
-    final ProviderContainer container = ProviderContainer();
+    final ProviderContainer container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(const FakeAuthRepository()),
+      ],
+    );
     addTearDown(container.dispose);
-    container.read(authControllerProvider.notifier).signIn();
 
     await tester.pumpWidget(
       UncontrolledProviderScope(container: container, child: const ScanApp()),
