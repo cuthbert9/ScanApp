@@ -67,8 +67,13 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(tester.takeException(), isNull, reason: 'orders, first paint');
 
-    // Open an order so Scan and Load have something to render.
-    final Finder card = find.textContaining('Dodoma', findRichText: true);
+    // Open an order so Scan and Load have something to render. Matched by
+    // docNo — a seed_data.json preview order shares the same "Dodoma Zonal
+    // Store" consignee, so consignee text alone is no longer unique.
+    final Finder card = find.textContaining(
+      'DO-2026-04417',
+      findRichText: true,
+    );
     if (card.evaluate().isNotEmpty) {
       await tester.tap(card);
       await tester.pump(const Duration(milliseconds: 600));
@@ -148,7 +153,11 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
 
-    final Finder card = find.textContaining('Dodoma', findRichText: true);
+    // Matched by docNo — see the equivalent comment in `walkEveryTab` above.
+    final Finder card = find.textContaining(
+      'DO-2026-04417',
+      findRichText: true,
+    );
     await tester.tap(card);
     await tester.pump(const Duration(milliseconds: 600));
 

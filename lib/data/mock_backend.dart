@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../domain/models/cold_chain_log.dart';
 import '../domain/models/display_choice.dart';
+import '../domain/models/gs1_barcode.dart';
 import '../domain/models/load_seal.dart';
 import '../domain/models/officer.dart';
 import '../domain/models/order.dart';
@@ -228,8 +229,18 @@ class MockBackend {
     return stock.any((DateTime d) => d.isBefore(line.expiry));
   }
 
-  /// Strips GS1 bracket notation so a typed `(00)3600…` matches a bare SSCC.
+  /// Extracts whatever identifies the line from a raw scan.
+  ///
+  /// Tries [Gs1Barcode] first — it understands full AI structure (GTIN,
+  /// SSCC, bracketed or FNC1-concatenated), which a real GS1-128/DataMatrix
+  /// scan off a medicine box actually is. Only a real product barcode
+  /// resolves to a `primaryKey`; this demo's fictional 16-digit SSCCs don't
+  /// fit any AI/length [Gs1Barcode] recognises, so they fall through to the
+  /// original bracket-strip-to-digits behaviour unchanged.
   String _normalise(String raw) {
+    final String? key = Gs1Barcode.parse(raw).primaryKey;
+    if (key != null) return key;
+
     final String trimmed = raw.trim();
     final RegExpMatch? m = RegExp(r'\(00\)(\d+)').firstMatch(trimmed);
     if (m != null) return m.group(1)!;

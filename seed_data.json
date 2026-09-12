@@ -37,78 +37,78 @@
           "id": "787775b9-6bca-4c89-882b-a7aaf9f1ef30",
           "sku": "PCM-500",
           "description": "Paracetamol 500 mg",
-          "barcodes": ["29999990000015", "(01)29999990000015(17)290128(10)TESTB001(21)TESTSN000001"],
+          "barcodes": ["29999990000013", "(01)29999990000013(17)290128(10)TESTB001(21)TESTSN000001"],
           "status": "pending",
           "batchNumber": "TESTB001",
           "serialNumber": "TESTSN000001",
           "expiryDate": "2029-01-28",
-          "gs1": "(01)29999990000015(17)290128(10)TESTB001(21)TESTSN000001"
+          "gs1": "(01)29999990000013(17)290128(10)TESTB001(21)TESTSN000001"
         },
         {
           "id": "721f5138-e5ed-4543-a8e9-9985348cfa7c",
           "sku": "AMX-500",
           "description": "Amoxicillin 500 mg",
-          "barcodes": ["29999990000022", "(01)29999990000022(17)300228(10)TESTB002(21)TESTSN000002"],
+          "barcodes": ["29999990000020", "(01)29999990000020(17)300228(10)TESTB002(21)TESTSN000002"],
           "status": "pending",
           "batchNumber": "TESTB002",
           "serialNumber": "TESTSN000002",
           "expiryDate": "2030-02-28",
-          "gs1": "(01)29999990000022(17)300228(10)TESTB002(21)TESTSN000002"
+          "gs1": "(01)29999990000020(17)300228(10)TESTB002(21)TESTSN000002"
         },
         {
           "id": "d5c2dff7-87ed-4e8e-98a5-2926d1357988",
           "sku": "IBU-400",
           "description": "Ibuprofen 400 mg",
-          "barcodes": ["29999990000039", "(01)29999990000039(17)280328(10)TESTB003(21)TESTSN000003"],
+          "barcodes": ["29999990000037", "(01)29999990000037(17)280328(10)TESTB003(21)TESTSN000003"],
           "status": "pending",
           "batchNumber": "TESTB003",
           "serialNumber": "TESTSN000003",
           "expiryDate": "2028-03-28",
-          "gs1": "(01)29999990000039(17)280328(10)TESTB003(21)TESTSN000003"
+          "gs1": "(01)29999990000037(17)280328(10)TESTB003(21)TESTSN000003"
         },
         {
           "id": "26e18fd9-d1d1-4f61-826e-e2fe4a23f563",
           "sku": "MET-500",
           "description": "Metformin 500 mg",
-          "barcodes": ["29999990000046", "(01)29999990000046(17)290428(10)TESTB004(21)TESTSN000004"],
+          "barcodes": ["29999990000044", "(01)29999990000044(17)290428(10)TESTB004(21)TESTSN000004"],
           "status": "pending",
           "batchNumber": "TESTB004",
           "serialNumber": "TESTSN000004",
           "expiryDate": "2029-04-28",
-          "gs1": "(01)29999990000046(17)290428(10)TESTB004(21)TESTSN000004"
+          "gs1": "(01)29999990000044(17)290428(10)TESTB004(21)TESTSN000004"
         },
         {
           "id": "510d8cb3-1db5-49af-8955-08112626f824",
           "sku": "AZI-500",
           "description": "Azithromycin 500 mg",
-          "barcodes": ["29999990000053", "(01)29999990000053(17)300528(10)TESTB005(21)TESTSN000005"],
+          "barcodes": ["29999990000051", "(01)29999990000051(17)300528(10)TESTB005(21)TESTSN000005"],
           "status": "pending",
           "batchNumber": "TESTB005",
           "serialNumber": "TESTSN000005",
           "expiryDate": "2030-05-28",
-          "gs1": "(01)29999990000053(17)300528(10)TESTB005(21)TESTSN000005"
+          "gs1": "(01)29999990000051(17)300528(10)TESTB005(21)TESTSN000005"
         },
         {
           "id": "95998d06-2123-44ab-b421-1f370bb6e147",
           "sku": "CIP-500",
           "description": "Ciprofloxacin 500 mg",
-          "barcodes": ["29999990000060", "(01)29999990000060(17)280628(10)TESTB006(21)TESTSN000006"],
+          "barcodes": ["29999990000068", "(01)29999990000068(17)280628(10)TESTB006(21)TESTSN000006"],
           "status": "pending",
           "batchNumber": "TESTB006",
           "serialNumber": "TESTSN000006",
           "expiryDate": "2028-06-28",
-          "gs1": "(01)29999990000060(17)280628(10)TESTB006(21)TESTSN000006"
+          "gs1": "(01)29999990000068(17)280628(10)TESTB006(21)TESTSN000006"
         },
         {
           "id": "328cec07-e124-453b-a58b-69e7a315ad0e",
           "sku": "OME-020",
           "description": "Omeprazole 20 mg",
-          "barcodes": ["29999990000077", "(01)29999990000077(17)290728(10)TESTB007(21)TESTSN000007"],
+          "barcodes": ["29999990000075", "(01)29999990000075(17)290728(10)TESTB007(21)TESTSN000007"],
           "status": "pending",
           "batchNumber": "TESTB007",
           "serialNumber": "TESTSN000007",
           "expiryDate": "2029-07-28",
-          "gs1": "(01)29999990000077(17)290728(10)TESTB007(21)TESTSN000007"
+          "gs1": "(01)29999990000075(17)290728(10)TESTB007(21)TESTSN000007"
         }
       ]
     },
@@ -132,78 +132,78 @@
           "id": "582652fd-7a08-42aa-984a-81e638ce6469",
           "sku": "AML-005",
           "description": "Amlodipine 5 mg",
-          "barcodes": ["29999990000084", "(01)29999990000084(17)300828(10)TESTB008(21)TESTSN000008"],
+          "barcodes": ["29999990000082", "(01)29999990000082(17)300828(10)TESTB008(21)TESTSN000008"],
           "status": "pending",
           "batchNumber": "TESTB008",
           "serialNumber": "TESTSN000008",
           "expiryDate": "2030-08-28",
-          "gs1": "(01)29999990000084(17)300828(10)TESTB008(21)TESTSN000008"
+          "gs1": "(01)29999990000082(17)300828(10)TESTB008(21)TESTSN000008"
         },
         {
           "id": "3404e6e2-4506-47ce-b923-62df3c563173",
           "sku": "LOS-050",
           "description": "Losartan 50 mg",
-          "barcodes": ["29999990000091", "(01)29999990000091(17)280928(10)TESTB009(21)TESTSN000009"],
+          "barcodes": ["29999990000099", "(01)29999990000099(17)280928(10)TESTB009(21)TESTSN000009"],
           "status": "pending",
           "batchNumber": "TESTB009",
           "serialNumber": "TESTSN000009",
           "expiryDate": "2028-09-28",
-          "gs1": "(01)29999990000091(17)280928(10)TESTB009(21)TESTSN000009"
+          "gs1": "(01)29999990000099(17)280928(10)TESTB009(21)TESTSN000009"
         },
         {
           "id": "47be4f6d-d85a-4ec6-8735-c35d588a9676",
           "sku": "CFX-200",
           "description": "Cefixime 200 mg",
-          "barcodes": ["29999990000107", "(01)29999990000107(17)291028(10)TESTB010(21)TESTSN000010"],
+          "barcodes": ["29999990000105", "(01)29999990000105(17)291028(10)TESTB010(21)TESTSN000010"],
           "status": "pending",
           "batchNumber": "TESTB010",
           "serialNumber": "TESTSN000010",
           "expiryDate": "2029-10-28",
-          "gs1": "(01)29999990000107(17)291028(10)TESTB010(21)TESTSN000010"
+          "gs1": "(01)29999990000105(17)291028(10)TESTB010(21)TESTSN000010"
         },
         {
           "id": "d8d61aa4-2d17-4ab3-a72d-901bf411c985",
           "sku": "DOX-100",
           "description": "Doxycycline 100 mg",
-          "barcodes": ["29999990000114", "(01)29999990000114(17)301128(10)TESTB011(21)TESTSN000011"],
+          "barcodes": ["29999990000112", "(01)29999990000112(17)301128(10)TESTB011(21)TESTSN000011"],
           "status": "pending",
           "batchNumber": "TESTB011",
           "serialNumber": "TESTSN000011",
           "expiryDate": "2030-11-28",
-          "gs1": "(01)29999990000114(17)301128(10)TESTB011(21)TESTSN000011"
+          "gs1": "(01)29999990000112(17)301128(10)TESTB011(21)TESTSN000011"
         },
         {
           "id": "525eb693-0c4d-48ef-8f71-bafd1ed75834",
           "sku": "CET-010",
           "description": "Cetirizine 10 mg",
-          "barcodes": ["29999990000121", "(01)29999990000121(17)281228(10)TESTB012(21)TESTSN000012"],
+          "barcodes": ["29999990000129", "(01)29999990000129(17)281228(10)TESTB012(21)TESTSN000012"],
           "status": "pending",
           "batchNumber": "TESTB012",
           "serialNumber": "TESTSN000012",
           "expiryDate": "2028-12-28",
-          "gs1": "(01)29999990000121(17)281228(10)TESTB012(21)TESTSN000012"
+          "gs1": "(01)29999990000129(17)281228(10)TESTB012(21)TESTSN000012"
         },
         {
           "id": "65820821-ae68-4ffd-9ade-b0eff0b5b01c",
           "sku": "DIC-050",
           "description": "Diclofenac 50 mg",
-          "barcodes": ["29999990000138", "(01)29999990000138(17)290128(10)TESTB013(21)TESTSN000013"],
+          "barcodes": ["29999990000136", "(01)29999990000136(17)290128(10)TESTB013(21)TESTSN000013"],
           "status": "pending",
           "batchNumber": "TESTB013",
           "serialNumber": "TESTSN000013",
           "expiryDate": "2029-01-28",
-          "gs1": "(01)29999990000138(17)290128(10)TESTB013(21)TESTSN000013"
+          "gs1": "(01)29999990000136(17)290128(10)TESTB013(21)TESTSN000013"
         },
         {
           "id": "2b3e0680-8a49-42af-b0d0-51837f0b1b68",
           "sku": "FLU-150",
           "description": "Fluconazole 150 mg",
-          "barcodes": ["29999990000145", "(01)29999990000145(17)300228(10)TESTB014(21)TESTSN000014"],
+          "barcodes": ["29999990000143", "(01)29999990000143(17)300228(10)TESTB014(21)TESTSN000014"],
           "status": "pending",
           "batchNumber": "TESTB014",
           "serialNumber": "TESTSN000014",
           "expiryDate": "2030-02-28",
-          "gs1": "(01)29999990000145(17)300228(10)TESTB014(21)TESTSN000014"
+          "gs1": "(01)29999990000143(17)300228(10)TESTB014(21)TESTSN000014"
         }
       ]
     },
@@ -227,67 +227,67 @@
           "id": "14027c4d-675b-42e8-9d6b-5e0467f5f65a",
           "sku": "ART-LUM",
           "description": "Artemether/Lumefantrine",
-          "barcodes": ["29999990000152", "(01)29999990000152(17)280328(10)TESTB015(21)TESTSN000015"],
+          "barcodes": ["29999990000150", "(01)29999990000150(17)280328(10)TESTB015(21)TESTSN000015"],
           "status": "pending",
           "batchNumber": "TESTB015",
           "serialNumber": "TESTSN000015",
           "expiryDate": "2028-03-28",
-          "gs1": "(01)29999990000152(17)280328(10)TESTB015(21)TESTSN000015"
+          "gs1": "(01)29999990000150(17)280328(10)TESTB015(21)TESTSN000015"
         },
         {
           "id": "5d52f10e-4bc2-406c-9cf2-b3f90a08021c",
           "sku": "COT-480",
           "description": "Co-trimoxazole 480 mg",
-          "barcodes": ["29999990000169", "(01)29999990000169(17)290428(10)TESTB016(21)TESTSN000016"],
+          "barcodes": ["29999990000167", "(01)29999990000167(17)290428(10)TESTB016(21)TESTSN000016"],
           "status": "pending",
           "batchNumber": "TESTB016",
           "serialNumber": "TESTSN000016",
           "expiryDate": "2029-04-28",
-          "gs1": "(01)29999990000169(17)290428(10)TESTB016(21)TESTSN000016"
+          "gs1": "(01)29999990000167(17)290428(10)TESTB016(21)TESTSN000016"
         },
         {
           "id": "e6b2bf80-a012-4ceb-a009-d72bdb00a1ed",
           "sku": "FUR-040",
           "description": "Furosemide 40 mg",
-          "barcodes": ["29999990000176", "(01)29999990000176(17)300528(10)TESTB017(21)TESTSN000017"],
+          "barcodes": ["29999990000174", "(01)29999990000174(17)300528(10)TESTB017(21)TESTSN000017"],
           "status": "pending",
           "batchNumber": "TESTB017",
           "serialNumber": "TESTSN000017",
           "expiryDate": "2030-05-28",
-          "gs1": "(01)29999990000176(17)300528(10)TESTB017(21)TESTSN000017"
+          "gs1": "(01)29999990000174(17)300528(10)TESTB017(21)TESTSN000017"
         },
         {
           "id": "8204e69e-3277-451c-8e73-037a2a9b139a",
           "sku": "ASP-075",
           "description": "Aspirin 75 mg",
-          "barcodes": ["29999990000183", "(01)29999990000183(17)280628(10)TESTB018(21)TESTSN000018"],
+          "barcodes": ["29999990000181", "(01)29999990000181(17)280628(10)TESTB018(21)TESTSN000018"],
           "status": "pending",
           "batchNumber": "TESTB018",
           "serialNumber": "TESTSN000018",
           "expiryDate": "2028-06-28",
-          "gs1": "(01)29999990000183(17)280628(10)TESTB018(21)TESTSN000018"
+          "gs1": "(01)29999990000181(17)280628(10)TESTB018(21)TESTSN000018"
         },
         {
           "id": "607cc8be-ce8f-4a4d-8f94-746461a35487",
           "sku": "VTC-500",
           "description": "Vitamin C 500 mg",
-          "barcodes": ["29999990000190", "(01)29999990000190(17)290728(10)TESTB019(21)TESTSN000019"],
+          "barcodes": ["29999990000198", "(01)29999990000198(17)290728(10)TESTB019(21)TESTSN000019"],
           "status": "pending",
           "batchNumber": "TESTB019",
           "serialNumber": "TESTSN000019",
           "expiryDate": "2029-07-28",
-          "gs1": "(01)29999990000190(17)290728(10)TESTB019(21)TESTSN000019"
+          "gs1": "(01)29999990000198(17)290728(10)TESTB019(21)TESTSN000019"
         },
         {
           "id": "7f00573e-00a5-4847-bad1-227a73cd5fae",
           "sku": "ORS-205",
           "description": "Oral Rehydration Salts",
-          "barcodes": ["29999990000206", "(01)29999990000206(17)300828(10)TESTB020(21)TESTSN000020"],
+          "barcodes": ["29999990000204", "(01)29999990000204(17)300828(10)TESTB020(21)TESTSN000020"],
           "status": "pending",
           "batchNumber": "TESTB020",
           "serialNumber": "TESTSN000020",
           "expiryDate": "2030-08-28",
-          "gs1": "(01)29999990000206(17)300828(10)TESTB020(21)TESTSN000020"
+          "gs1": "(01)29999990000204(17)300828(10)TESTB020(21)TESTSN000020"
         }
       ]
     }

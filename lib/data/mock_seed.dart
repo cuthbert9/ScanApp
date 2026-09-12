@@ -285,7 +285,154 @@ abstract final class MockSeed {
         lotPrefix: 'IFA26',
       ),
     ),
+    ...pharmaPreviewOrders(),
   ];
+
+  // ------------------------------------------------ real-backend seed preview
+  /// A preview of `seed_data.json` — the SCN seed handed to the DB custodian —
+  /// rendered through the existing mock queue so it can be looked at before
+  /// that data actually exists in the real backend.
+  ///
+  /// Added *alongside* the three orders above, not replacing them: those exist
+  /// to demonstrate FEFO, cold-chain excursion and short-load sealing, none of
+  /// which `seed_data.json` has an example of (no repeated product, nothing
+  /// flagged cold-chain). Keeping them separate means every existing rule test
+  /// stays exactly as it was — they key off `DO-2026-04417`/`04418`/`04421` by
+  /// docNo, untouched by anything added here.
+  ///
+  /// `routeCode`, `bay`, per-line `weightKg`/`volumeM3` and vehicle capacity
+  /// are **invented placeholders** — the real backend's load-plan/item
+  /// contract has none of these fields at all. `quantity` is fixed at `1`:
+  /// each item is one scannable box (its own GS1 serial number), not a pack of
+  /// N units, per the box-tracking model `LoadPlan`/`LoadPlanItem` now use.
+  static List<Order> pharmaPreviewOrders() {
+    const Vehicle previewVehicle = Vehicle(
+      maxWeightKg: 500,
+      maxVolumeM3: 2,
+      plate: '',
+    );
+    const double placeholderWeightKg = 5;
+    const double placeholderVolumeM3 = 0.02;
+
+    // name, GTIN, batch number, expiry (ISO date) — straight from
+    // seed_data.json, in the same 7 / 7 / 6 split across its three load plans.
+    const List<List<String>> lp1 = <List<String>>[
+      <String>[
+        'Paracetamol 500 mg',
+        '29999990000013',
+        'TESTB001',
+        '2029-01-28',
+      ],
+      <String>[
+        'Amoxicillin 500 mg',
+        '29999990000020',
+        'TESTB002',
+        '2030-02-28',
+      ],
+      <String>['Ibuprofen 400 mg', '29999990000037', 'TESTB003', '2028-03-28'],
+      <String>['Metformin 500 mg', '29999990000044', 'TESTB004', '2029-04-28'],
+      <String>[
+        'Azithromycin 500 mg',
+        '29999990000051',
+        'TESTB005',
+        '2030-05-28',
+      ],
+      <String>[
+        'Ciprofloxacin 500 mg',
+        '29999990000068',
+        'TESTB006',
+        '2028-06-28',
+      ],
+      <String>['Omeprazole 20 mg', '29999990000075', 'TESTB007', '2029-07-28'],
+    ];
+    const List<List<String>> lp2 = <List<String>>[
+      <String>['Amlodipine 5 mg', '29999990000082', 'TESTB008', '2030-08-28'],
+      <String>['Losartan 50 mg', '29999990000099', 'TESTB009', '2028-09-28'],
+      <String>['Cefixime 200 mg', '29999990000105', 'TESTB010', '2029-10-28'],
+      <String>[
+        'Doxycycline 100 mg',
+        '29999990000112',
+        'TESTB011',
+        '2030-11-28',
+      ],
+      <String>['Cetirizine 10 mg', '29999990000129', 'TESTB012', '2028-12-28'],
+      <String>['Diclofenac 50 mg', '29999990000136', 'TESTB013', '2029-01-28'],
+      <String>[
+        'Fluconazole 150 mg',
+        '29999990000143',
+        'TESTB014',
+        '2030-02-28',
+      ],
+    ];
+    const List<List<String>> lp3 = <List<String>>[
+      <String>[
+        'Artemether/Lumefantrine',
+        '29999990000150',
+        'TESTB015',
+        '2028-03-28',
+      ],
+      <String>[
+        'Co-trimoxazole 480 mg',
+        '29999990000167',
+        'TESTB016',
+        '2029-04-28',
+      ],
+      <String>['Furosemide 40 mg', '29999990000174', 'TESTB017', '2030-05-28'],
+      <String>['Aspirin 75 mg', '29999990000181', 'TESTB018', '2028-06-28'],
+      <String>['Vitamin C 500 mg', '29999990000198', 'TESTB019', '2029-07-28'],
+      <String>[
+        'Oral Rehydration Salts',
+        '29999990000204',
+        'TESTB020',
+        '2030-08-28',
+      ],
+    ];
+
+    List<OrderLine> toLines(List<List<String>> items) =>
+        List<OrderLine>.generate(items.length, (int i) {
+          final List<String> item = items[i];
+          return OrderLine(
+            seq: i + 1,
+            productName: item[0],
+            quantity: 1,
+            sscc: item[1],
+            lot: item[2],
+            expiry: DateTime.parse(item[3]),
+            weightKg: placeholderWeightKg,
+            volumeM3: placeholderVolumeM3,
+          );
+        });
+
+    return <Order>[
+      Order(
+        docNo: 'LP-202609-00001',
+        consignee: 'Dodoma Zonal Store',
+        routeCode: 'TZ-C-09',
+        bay: '04',
+        vehicle: previewVehicle.copyWith(plate: 'T 421 DKV'),
+        status: OrderStatus.queued,
+        lines: toLines(lp1),
+      ),
+      Order(
+        docNo: 'LP-202609-00002',
+        consignee: 'Morogoro Regional Medical Store',
+        routeCode: 'TZ-E-04',
+        bay: '04',
+        vehicle: previewVehicle.copyWith(plate: 'T 118 CQA'),
+        status: OrderStatus.queued,
+        lines: toLines(lp2),
+      ),
+      Order(
+        docNo: 'LP-202609-00003',
+        consignee: 'Ifakara District Hospital',
+        routeCode: 'TZ-S-13',
+        bay: '04',
+        vehicle: previewVehicle.copyWith(plate: 'T 906 BLE'),
+        status: OrderStatus.queued,
+        lines: toLines(lp3),
+      ),
+    ];
+  }
 
   // ------------------------------------------------------------- cold chain
   static const ColdChainLog coldChain04417 = ColdChainLog(

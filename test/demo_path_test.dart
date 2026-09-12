@@ -93,17 +93,27 @@ void main() {
 
     // --- Orders -----------------------------------------------------------
     expect(find.text('Loading Queue'), findsOneWidget);
+    // Matched by docNo, not consignee — a second "Dodoma Zonal Store" card
+    // now exists (MockSeed.pharmaPreviewOrders, a preview of seed_data.json),
+    // a realistic case of two deliveries to the same real place rather than
+    // an ambiguity to design around.
     expect(
-      find.textContaining('Dodoma Zonal Store', findRichText: true),
+      find.textContaining('DO-2026-04417', findRichText: true),
       findsOneWidget,
     );
-    expect(find.text('3'), findsOneWidget, reason: 'three staged orders');
-    expect(find.text('41'), findsOneWidget, reason: '14 + 19 + 8 units');
+    expect(
+      find.text('6'),
+      findsOneWidget,
+      reason: 'six staged orders: 3 demo + 3 seed_data.json preview',
+    );
+    expect(
+      find.text('61'),
+      findsOneWidget,
+      reason: '14+19+8 demo units + 7+7+6 preview units',
+    );
 
     // Tapping a card selects it; it must not navigate.
-    await tester.tap(
-      find.textContaining('Dodoma Zonal Store', findRichText: true),
-    );
+    await tester.tap(find.textContaining('DO-2026-04417', findRichText: true));
     await settle(tester);
     expect(find.text('Loading Queue'), findsOneWidget);
 
@@ -162,14 +172,20 @@ void main() {
     // shell kept that branch alive. Scroll back up to where the header is.
     await scrollToTop(tester, LoadingQueueScreen);
 
-    // Back on Orders, and the sealed order has left the staged list.
+    // Back on Orders, and the sealed order has left the staged list. Matched
+    // by docNo — the seed_data.json preview order sharing the same
+    // "Dodoma Zonal Store" consignee is still staged and unaffected.
     expect(find.text('Loading Queue'), findsOneWidget);
     expect(
-      find.textContaining('Dodoma Zonal Store', findRichText: true),
+      find.textContaining('DO-2026-04417', findRichText: true),
       findsNothing,
       reason: 'a sealed order leaves the queue',
     );
-    expect(find.text('2'), findsWidgets, reason: 'two orders remain');
+    expect(
+      find.text('5'),
+      findsWidgets,
+      reason: 'five orders remain: 2 demo + 3 seed_data.json preview',
+    );
   });
 
   testWidgets('the Scan tab with no order open offers a way back', (

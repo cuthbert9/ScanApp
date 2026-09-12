@@ -28,8 +28,10 @@ void main() {
 
     test('the queue summary agrees with the orders', () {
       final List<Order> staged = backend.stagedOrders('04');
-      expect(staged.length, 3);
-      expect(staged.fold(0, (int s, Order o) => s + o.units), 41);
+      // 3 demo orders (14+19+8 units) + 3 seed_data.json preview orders
+      // (7+7+6 units) — see MockSeed.pharmaPreviewOrders.
+      expect(staged.length, 6);
+      expect(staged.fold(0, (int s, Order o) => s + o.units), 61);
       expect(staged.where((Order o) => o.coldChain).length, 2);
     });
 
@@ -57,6 +59,22 @@ void main() {
       expect(e.result, ScanResult.wrongOrder);
       expect(e.reason, contains('DO-2026-04418'));
     });
+
+    test(
+      'a real GS1-128 composite scan resolves to its GTIN, not garbled digits',
+      () {
+        // The actual barcode on a seed_data.json box — AI(01) GTIN, AI(17)
+        // expiry, AI(10) batch, AI(21) serial — not the bare GTIN alone.
+        // Regression test for the bug where MockBackend._normalise stripped
+        // this down to a meaningless run of digits instead of routing it
+        // through Gs1Barcode.parse.
+        const String realBarcode =
+            '(01)29999990000013(17)290128(10)TESTB001(21)TESTSN000001';
+        final ScanEvent e = backend.scanCode('LP-202609-00001', realBarcode);
+        expect(e.result, ScanResult.ok);
+        expect(e.line?.productName, contains('Paracetamol'));
+      },
+    );
 
     test('an earlier lot in stock holds the line on FEFO', () {
       // Clear the opening feed's claim on line 14 by working a fresh order.
